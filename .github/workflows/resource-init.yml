@@ -1,12 +1,7 @@
 name: Terraform CD
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:  # Enables manual execution only
 
 jobs:
   terraform:
@@ -22,7 +17,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{secrets.AWS_SESSION_TOKEN}}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Setup Terraform
@@ -42,9 +37,8 @@ jobs:
         env:
           TF_VAR_region: ${{ secrets.AWS_REGION }}
 
-      # Terraform Apply (only on main branch pushes)
+      # Terraform Apply
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve tfplan
         working-directory: ./setup/terraform  # Adjust path if needed
         env:
