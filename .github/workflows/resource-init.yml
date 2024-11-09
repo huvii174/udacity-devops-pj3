@@ -17,8 +17,9 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ secrets.AWS_REGION }}
+          # Remove aws-session-token if not needed
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN || '' }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -27,19 +28,30 @@ jobs:
 
       # Initialize Terraform
       - name: Terraform Init
+        working-directory: ./setup/terraform  # Adjust path if needed
         run: terraform init
-        working-directory: ./setup/terraform  # Adjust path if needed
 
-      # Terraform Plan
+      # Terraform Plan with Conditional Creation
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
         working-directory: ./setup/terraform  # Adjust path if needed
         env:
           TF_VAR_region: ${{ secrets.AWS_REGION }}
+        run: |
+          terraform plan -out=tfplan
 
-      # Terraform Apply
+      # Check if there are changes to apply
+      - name: Check for Terraform Changes
+        id: tf_changes
+        working-directory: ./setup/terraform  # Adjust path if needed
+        run: |
+          terraform show -json tfplan > tfplan.json
+          CHANGES=$(jq '.resource_changes | length' tfplan.json)
+          echo "::set-output name=changes::$CHANGES"
+
+      # Terraform Apply if there are changes
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        if: steps.tf_changes.outputs.changes != '0'
         working-directory: ./setup/terraform  # Adjust path if needed
         env:
           TF_VAR_region: ${{ secrets.AWS_REGION }}
+        run: terraform apply -auto-approve tfplan
