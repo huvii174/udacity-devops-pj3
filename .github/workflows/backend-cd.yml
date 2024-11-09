@@ -94,30 +94,16 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{secrets.AWS_SESSION_TOKEN}}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Install kustomize
-        run: |
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-          mv kustomize /usr/local/bin/
-
-      - name: Deploy Kubernetes manifests
+      - name: Deploy K8s manifests
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: backend
           IMAGE_TAG: ${{ github.sha }}
         run: |
           cd k8s
-          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name cluster
+          aws sts get-caller-identity
+          aws eks --region $AWS_REGION update-kubeconfig --name cluster
+          kubectl config current-context
           kustomize edit set image backend=$REGISTRY/$REPOSITORY:$IMAGE_TAG
           kustomize build | kubectl apply -f -
           kubectl get pods
