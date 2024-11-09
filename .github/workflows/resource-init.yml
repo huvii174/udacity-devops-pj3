@@ -46,7 +46,7 @@ jobs:
 
       # Terraform Apply if there are changes
       - name: Terraform Apply
-        if: steps.plan.outputs.exitcode == '2'
+        if: steps.plan.outputs.exitcode == '0'
         working-directory: ./setup/terraform  # Adjust path if needed
         env:
           TF_VAR_region: ${{ secrets.AWS_REGION }}
@@ -54,7 +54,7 @@ jobs:
 
       # No Changes Detected
       - name: No Changes to Apply
-        if: steps.plan.outputs.exitcode == '0'
+        if: steps.plan.outputs.exitcode == '2'
         run: echo "No changes to apply."
 
       # Handle Errors
