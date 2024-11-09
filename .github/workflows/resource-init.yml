@@ -17,9 +17,8 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          # Remove aws-session-token if not needed
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN || '' }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -31,27 +30,34 @@ jobs:
         working-directory: ./setup/terraform  # Adjust path if needed
         run: terraform init
 
-      # Terraform Plan with Conditional Creation
+      # Terraform Plan with Detailed Exit Code
       - name: Terraform Plan
+        id: plan
         working-directory: ./setup/terraform  # Adjust path if needed
+        continue-on-error: true  # Allow the job to continue even if this step fails
+        shell: bash
         env:
           TF_VAR_region: ${{ secrets.AWS_REGION }}
         run: |
-          terraform plan -out=tfplan
-
-      # Check if there are changes to apply
-      - name: Check for Terraform Changes
-        id: tf_changes
-        working-directory: ./setup/terraform  # Adjust path if needed
-        run: |
-          terraform show -json tfplan > tfplan.json
-          CHANGES=$(jq '.resource_changes | length' tfplan.json)
-          echo "::set-output name=changes::$CHANGES"
+          terraform plan -detailed-exitcode -out=tfplan
+          EXIT_CODE=$?
+          echo "Terraform plan exit code: $EXIT_CODE"
+          echo "exitcode=$EXIT_CODE" >> $GITHUB_OUTPUT
 
       # Terraform Apply if there are changes
       - name: Terraform Apply
-        if: steps.tf_changes.outputs.changes != '0'
+        if: steps.plan.outputs.exitcode == '2'
         working-directory: ./setup/terraform  # Adjust path if needed
         env:
           TF_VAR_region: ${{ secrets.AWS_REGION }}
         run: terraform apply -auto-approve tfplan
+
+      # No Changes Detected
+      - name: No Changes to Apply
+        if: steps.plan.outputs.exitcode == '0'
+        run: echo "No changes to apply."
+
+      # Handle Errors
+      - name: Terraform Plan Error
+        if: steps.plan.outputs.exitcode != '0' && steps.plan.outputs.exitcode != '2'
+        run: echo "Error running terraform plan."
