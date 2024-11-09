@@ -32,9 +32,14 @@ jobs:
         run: terraform init
         working-directory: ./setup/terraform  # Adjust path if needed
 
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: ./setup/terraform  # Adjust path if needed
+
+
       # Terraform Destroy (Requires Confirmation)
       - name: Terraform Destroy
-        run: terraform destroy -auto-approve
+        run: terraform plan -destroy 
         working-directory: ./setup/terraform  # Adjust path if needed
         env:
           TF_VAR_region: ${{ secrets.AWS_REGION }}
