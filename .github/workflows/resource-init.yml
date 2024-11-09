@@ -25,11 +25,10 @@ jobs:
           aws-session-token: ${{secrets.AWS_SESSION_TOKEN}}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Install Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.4.0
+          terraform_version: 1.3.9
 
       # Initialize Terraform
       - name: Terraform Init
