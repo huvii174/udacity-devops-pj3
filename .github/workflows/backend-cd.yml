@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup Backend Environment
-        uses: ./.github/actions/setup-environment
+        uses: actions/setup-python@v5
         with:
           language: python
           python-version: 3.10
@@ -37,7 +37,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup Backend Environment
-        uses: ./.github/actions/setup-environment
+        uses: actions/setup-python@v5
         with:
           language: python
           python-version: 3.10
