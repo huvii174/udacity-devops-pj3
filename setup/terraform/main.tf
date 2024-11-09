@@ -156,7 +156,7 @@ resource "aws_eks_cluster" "main" {
 # CodeBuild Resources
 ######################
 # Create a CodeBuild project
-resource "aws_codebuild_project" {
+resource "aws_codebuild_project" "codebuild" {
   name          = "udacity"
   description   = "Udacity CodeBuild project"
   service_role  = aws_iam_role.codebuild.arn
