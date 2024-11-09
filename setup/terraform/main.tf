@@ -1,15 +1,6 @@
 ####################
 # VPC Configuration
 ####################
-# Create a VPC
-resource "aws_vpc" "vpc" {
-  tags = {
-    "Name" = "udacity"
-  }
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_support   = true
-  enable_dns_hostnames = true
-}
 
 # Create an internet gateway
 resource "aws_internet_gateway" "igw" {
@@ -113,29 +104,6 @@ resource "aws_vpc_endpoint" "ecr-api-endpoint" {
   private_dns_enabled = true
 }
 
-###################
-# ECR Repositories
-###################
-resource "aws_ecr_repository" "frontend" {
-  name                 = "frontend"
-  image_tag_mutability = "MUTABLE"
-  force_delete         = true
-
-  image_scanning_configuration {
-    scan_on_push = true
-  }
-}
-
-resource "aws_ecr_repository" "backend" {
-  name                 = "backend"
-  image_tag_mutability = "MUTABLE"
-  force_delete         = true
-
-  image_scanning_configuration {
-    scan_on_push = true
-  }
-}
-
 ################
 # EKS Resources
 ################
@@ -152,24 +120,6 @@ resource "aws_eks_cluster" "main" {
   depends_on = [aws_iam_role_policy_attachment.eks_cluster, aws_iam_role_policy_attachment.eks_service]
 }
 
-
-# Create an IAM role for the EKS cluster
-resource "aws_iam_role" "eks_cluster" {
-  name = "eks_cluster_role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "eks.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
 
 # Attach policies to the EKS cluster IAM role
 resource "aws_iam_role_policy_attachment" "eks_cluster" {
