@@ -152,22 +152,11 @@ resource "aws_eks_cluster" "main" {
   depends_on = [aws_iam_role_policy_attachment.eks_cluster, aws_iam_role_policy_attachment.eks_service]
 }
 
-# Attach policies to the EKS cluster IAM role
-resource "aws_iam_role_policy_attachment" "eks_cluster" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.eks_cluster.name
-}
-
-resource "aws_iam_role_policy_attachment" "eks_service" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
-  role       = aws_iam_role.eks_cluster.name
-}
-
 ######################
 # CodeBuild Resources
 ######################
 # Create a CodeBuild project
-resource "aws_codebuild_project" "codebuild" {
+resource "aws_codebuild_project" {
   name          = "udacity"
   description   = "Udacity CodeBuild project"
   service_role  = aws_iam_role.codebuild.arn
