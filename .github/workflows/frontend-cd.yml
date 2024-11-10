@@ -107,9 +107,26 @@ jobs:
           kubectl get pods
           kubectl get svc
 
+      - name: Get Pull Request Number
+        id: get_pr
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha
+            });
+            if (prs.data.length > 0) {
+              core.setOutput('pr_number', prs.data[0].number);
+            } else {
+              console.log('No PR associated with this commit.');
+            }
+    
       - name: Post Deployment Comment
-        if: success()
+        if: steps.get_pr.outputs.pr_number
         run: |
-          curl -X POST -H "Authorization: token ${{ secrets.AUTHEN_TOKEN }}" \
-            -d '{"body": "Deployment successful for Frontend!"}' \
-            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.number }}/comments
+          curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d '{"body": "🎉 Deployment successful for Frontend!"}' \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ steps.get_pr.outputs.pr_number }}/comments
