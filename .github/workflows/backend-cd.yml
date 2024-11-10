@@ -125,11 +125,6 @@ jobs:
           kustomize build | kubectl apply -f -
           kubectl get pods
           kubectl get svc
-            
-  post-deploy:
-    needs: deploy
-    runs-on: ubuntu-latest
-    steps:
     
       - name: Get Pull Request Number
         id: get_pr
