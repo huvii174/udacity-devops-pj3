@@ -8,6 +8,9 @@ on:
       - 'starter/backend/**'
   workflow_dispatch:
 
+permissions:
+  pull-requests: write
+
 defaults:
   run:
     working-directory: starter/backend
