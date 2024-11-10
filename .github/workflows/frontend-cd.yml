@@ -26,6 +26,11 @@ jobs:
         uses: actions/setup-node@v4.1.0
         with:
           node-version: 16
+          cache: 'npm'
+          cache-dependency-path: './starter/frontend/package-lock.json'
+          
+      - name: Install Dependencies
+        run: npm install --verbose
 
       - name: Cache node modules
         id: cache-npm
@@ -45,9 +50,6 @@ jobs:
         name: List the state of node modules
         continue-on-error: true
         run: npm list
-
-      - name: Install Dependencies
-        run: npm install --verbose
 
       - name: Run linting jobs
         run: npm run lint --fix
@@ -62,6 +64,11 @@ jobs:
         uses: actions/setup-node@v4.1.0
         with:
           node-version: 16
+          cache: 'npm'
+          cache-dependency-path: './starter/frontend/package-lock.json'
+
+      - name: Install Dependencies
+        run: npm install --verbose
 
       - name: Cache node modules
         id: cache-npm
@@ -81,9 +88,6 @@ jobs:
         name: List the state of node modules
         continue-on-error: true
         run: npm list
-
-      - name: Install Dependencies
-        run: npm install --verbose
 
       - name: Run testing jobs
         run: npm run test
