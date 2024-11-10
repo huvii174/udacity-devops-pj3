@@ -105,22 +105,15 @@ jobs:
           aws-session-token: ${{secrets.AWS_SESSION_TOKEN}}
           aws-region: ${{ secrets.AWS_REGION }}
         
-      - name: Config K8s manifests
+      - name: Deploy K8s manifests
+        working-directory: starter/backend/k8s
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: backend
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          cd k8s
           aws sts get-caller-identity
           aws eks --region $AWS_REGION update-kubeconfig --name cluster
-          
-      - name: Deploy K8s manifests
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: backend
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
           kubectl config current-context
           kustomize edit set image backend=$REGISTRY/$REPOSITORY:$IMAGE_TAG
           kustomize build | kubectl apply -f -
