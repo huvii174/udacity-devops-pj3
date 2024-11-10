@@ -93,7 +93,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
         
       - name: Deploy K8s manifests
-        working-directory: starter/backend/k8s
+        working-directory: starter/frontend/k8s
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: frontend
@@ -111,5 +111,5 @@ jobs:
         if: success()
         run: |
           curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -d '{"body": "Deployment successful for Backend!"}' \
+            -d '{"body": "Deployment successful for Frontend!"}' \
             https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.number }}/comments
