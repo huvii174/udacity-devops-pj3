@@ -110,6 +110,6 @@ jobs:
       - name: Post Deployment Comment
         if: success()
         run: |
-          curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          curl -X POST -H "Authorization: token ${{ secrets.AUTHEN_TOKEN }}" \
             -d '{"body": "Deployment successful for Frontend!"}' \
             https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.number }}/comments
