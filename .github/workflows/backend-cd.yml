@@ -94,9 +94,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
-      REGISTRY: ${{ needs.build.outputs.registry }}
-      REPOSITORY: backend
-      IMAGE_TAG: ${{ needs.build.outputs.image_tag }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -109,14 +106,19 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
       - name: Deploy K8s manifests
         working-directory: starter/backend/k8s
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: backend
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           aws sts get-caller-identity
           aws eks --region $AWS_REGION update-kubeconfig --name cluster
-          echo $REGISTRY
-          echo $REPOSITORY
-          echo $IMAGE_TAG
           kubectl config current-context
           kustomize edit set image backend=$REGISTRY/$REPOSITORY:$IMAGE_TAG
           kustomize build | kubectl apply -f -
